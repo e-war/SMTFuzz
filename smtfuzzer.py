@@ -7,9 +7,6 @@
 # WARNING: Will only work against targets without authorization for now until implemented
 
 # TODO:
-# FIX TIMEOUT ISSUE
-# refactor to seperate SMTP connection establishing so while the usernames are checked we can restart the connection at a saved place if we are disconnected.
-
 import sys
 import time
 import re
