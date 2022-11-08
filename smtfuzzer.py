@@ -16,19 +16,23 @@ import re
 from telnetlib import Telnet
 from os import system
 
-def invokeSMTPConnection(u,ip_p):
+def invokeSMTPConnection(ip_p):
+    connection = Telnet(ip_p[0],ip_p[1],timeout=20)
+    connection.write(b'HELO '+bytes(ip_p[0],"utf-8")+b'\n')
+# BUG: NEED TO LET SERVER SETTLE AFTER CONNECT/RECONNECT
+    time.sleep(10)
+    return connection
+
+def verifyUsers(u,ip_p):
 # Initialize variables
     verified_users = []
     expected_connection_codes = [b'250 ',b'220 ']
 # 1. Valid user 2. Invalid user 3. Timeout after too many failed connections
     expected_user_codes = [b'252 2.0.0 ',b'550 5.1.1 ',b'421 4.7.0 ']
 # Initialize the connection
-    connection = Telnet(ip_p[0],ip_p[1],timeout=5)
-    connection.write(b'HELO '+bytes(ip_p[0],"utf-8")+b'\n')
-
-# Decode the correct hostname for VERIFICATION 
+    connection = invokeSMTPConnection(ip_p)
 # This connection process takes a long time right now 
-    returned_connection_code = connection.expect(expected_connection_codes,timeout=30)
+    returned_connection_code = connection.expect(expected_connection_codes)
     if(returned_connection_code[0] == -1):
         raise ConnectionError
     elif(returned_connection_code[0] == 0):
@@ -37,9 +41,6 @@ def invokeSMTPConnection(u,ip_p):
         hostname = connection.read_until(b'\n').decode("ascii")
         hostname = re.search(r"^[\w\d\.]+",hostname).group()
     
-# BUG: NEED TO LET SERVER SETTLE AFTER CONNECT
-    time.sleep(3)
-
 # For username in user list, verify they exist, append to verified users
     for username in u:
         connection.write(b'VRFY "'+bytes(username,"utf-8")+b'@'+bytes(hostname,"utf-8")+b'"\n')
@@ -50,12 +51,10 @@ def invokeSMTPConnection(u,ip_p):
 # If valid, add to verified
         elif(returned_user_code[0] == 0):
                 verified_users.append(connection.read_until(b'\n').decode("ascii"))               
-# If invalid sleep to avoid DoS detection/timeout
-        elif(returned_user_code[0] == 1):
-                time.sleep(1)
 # If dos detection die 
         elif(returned_user_code[0] == 2):
-            raise ConnectionError
+            print("We were kicked off this connection, retyring...")
+            connection = invokeSMTPConnection(ip_p)
 # Show a continous updated list of all verified usernames
         system('/usr/bin/clear')
         print("############ FUZZING "+hostname+" ####")
@@ -119,7 +118,7 @@ def __main__():
 
     try:
         print("Establishing connection...")
-        valid_usernames = invokeSMTPConnection(sanitized_usernames, ip_port)
+        valid_usernames = verifyUsers(sanitized_usernames, ip_port)
     except ConnectionError:
         print("A connection error such as timeout may have occured, please attemept again after re-establishing connection.")
         return 1
