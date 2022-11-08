@@ -1,3 +1,8 @@
 # SMTFuzz
 
-usage: python3 ./smtfuzz.py -w [wordlist path] (IP/DNS:PORT)
+#### Requirements:
+
+
+
+#### Usage:
+`python3 ./smtfuzz.py -w [wordlist path] (IP/DNS:PORT)`
