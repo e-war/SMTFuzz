@@ -4,7 +4,9 @@ I wrote this tool to fuzz usernames against a [HTB Challenge](https://github.com
 
 #### Requirements:
 
-
+- Linux (For now)
+- Python 3:
+    - 
 
 #### Usage:
 `python3 ./smtfuzz.py -w [wordlist path] (IP/DNS:PORT)`
