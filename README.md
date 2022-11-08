@@ -6,7 +6,28 @@ I wrote this tool to fuzz usernames against a [HTB Challenge](https://github.com
 
 - Linux (For now)
 - Python 3
-    - Test
+    - sys
+    - time
+    - re
+    - telnetlib
+    - os
+
+#### Features:
+- External wordlists
+- DoS disconnection reattemps
 
 #### Usage:
 `python3 ./smtfuzz.py -w [wordlist path] (IP/DNS:PORT)`
+
+```
+############ FUZZING debian.localdomain ####
+# Found 2 /( 189 / 822 )
+# Please be patient, this program is slow:
+# Trying: LBACSYS
+# Verified Users:
+#"root@debian.localdomain"
+
+#"BACKUP@debian.localdomain"
+
+We were kicked off this connection, retyring...
+```
